@@ -1,4 +1,4 @@
-const CACHE = 'petthermo-v2';
+const CACHE = 'petthermo-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -28,10 +28,29 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  // 页面导航：网络优先，联网时永远拿最新 HTML；离线时回退缓存
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req)
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put('./index.html', copy));
+          return res;
+        })
+        .catch(() => caches.match('./index.html').then(r => r || caches.match('./')))
+    );
+    return;
+  }
+  // 静态资源：缓存优先，未命中再联网并写入缓存
   e.respondWith(
-    caches.match(e.request)
-      .then(r => r || fetch(e.request))
-      .catch(() => e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error())
+    caches.match(req).then(r => r || fetch(req).then(res => {
+      if (res && res.status === 200 && res.type === 'basic') {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(req, copy));
+      }
+      return res;
+    }).catch(() => Response.error()))
   );
 });
