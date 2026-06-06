@@ -1,4 +1,4 @@
-const CACHE = 'petthermo-v5';
+const CACHE = 'petthermo-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './assets/hero-dog.jpeg',
+  './assets/pet-xionger.jpg',
   './assets/vision-dog.jpeg',
   './assets/device.jpg',
   './assets/logo-nav.png',

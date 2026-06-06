@@ -291,9 +291,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 
       <!-- app bar -->
       <div class="appbar" id="appbar">
-        <img class="avatar" src="assets/hero-dog.jpeg" alt="豆豆" />
+        <img class="avatar" src="assets/pet-xionger.jpg" alt="熊二" />
         <div class="who">
-          <b id="ab-name">豆豆 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="opacity:.5"><path d="M6 9l6 6 6-6"/></svg></b>
+          <b id="ab-name">熊二 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="opacity:.5"><path d="M6 9l6 6 6-6"/></svg></b>
           <small><span class="dot live"></span> <span id="ab-status">设备在线 · 客厅 · 实时守护中</span></small>
         </div>
         <button class="lang-mini" onclick="PTI18N.toggle()" aria-label="切换语言 / 언어 전환">
@@ -329,7 +329,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
               </svg>
               <div class="cdesc">
                 <b id="home-mood">体感舒适</b>
-                <p>豆豆正在安睡，体温与环境都在理想区间。</p>
+                <p>熊二正在安睡，体温与环境都在理想区间。</p>
                 <span class="tag"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> AI 自动维持中</span>
               </div>
             </div>
@@ -371,8 +371,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
           <div class="card ai">
             <div class="ai-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l1.9 4.1L18 9l-4.1 1.9L12 15l-1.9-4.1L6 9l4.1-1.9z"/><circle cx="18" cy="18" r="2.4"/></svg></div>
             <div class="ai-tx">
-              <b>豆豆此刻很惬意 🐾</b>
-              <p id="ai-text">凌晨环境温度下探至 23.8℃，已为豆豆轻启「加热垫·低档」，预计 8 分钟内回到 24–26℃ 舒适区，无需打扰它的睡眠。</p>
+              <b>熊二此刻很惬意 🐾</b>
+              <p id="ai-text">凌晨环境温度下探至 23.8℃，已为熊二轻启「加热垫·低档」，预计 8 分钟内回到 24–26℃ 舒适区，无需打扰它的睡眠。</p>
             </div>
           </div>
 
@@ -389,7 +389,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
           <div class="sec-label" style="margin-top:6px"><h3>实时画面</h3><span class="chip pill-ok"><span class="dot"></span> 在线</span></div>
           <div class="thermal big">
             <div class="thermal-img" id="t-thermal"></div>
-            <img class="rgb-img" id="t-rgb" src="assets/hero-dog.jpeg" alt="实景" hidden />
+            <img class="rgb-img" id="t-rgb" src="assets/pet-xionger.jpg" alt="实景" hidden />
             <div class="thermal-grid" id="t-grid"></div>
             <div class="thermal-meta"><span id="t-max">最高 38.6°</span><span id="t-avg">均温 31.2°</span><span id="t-min">最低 23.8°</span></div>
             <div class="thermal-live"><i></i> LIVE</div>
@@ -468,7 +468,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
           <div class="mode-hero" id="modeHero" style="margin-top:8px">
             <div class="mh-top"><span id="mh-mode">AI 自动模式</span><span id="mh-state">维持中</span></div>
             <div class="mh-temp" id="mh-temp">24<small>–26℃</small></div>
-            <div class="mh-sub" id="mh-sub">正根据豆豆体温与环境，自动联动空调与加热垫</div>
+            <div class="mh-sub" id="mh-sub">正根据熊二体温与环境，自动联动空调与加热垫</div>
           </div>
 
           <div class="seg" style="margin-top:14px" id="mode-seg">
@@ -519,9 +519,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
         <!-- ===== VIEW: 我的 ===== -->
         <section class="view" id="v-me">
           <div class="card petcard" style="margin-top:8px">
-            <img src="assets/hero-dog.jpeg" alt="豆豆" />
+            <img src="assets/pet-xionger.jpg" alt="熊二" />
             <div class="p-tx">
-              <b>豆豆</b>
+              <b>熊二</b>
               <p>金毛寻回犬 · 3 岁 · 28kg</p>
               <div class="tags"><span class="chip">适宜 20–25℃</span><span class="chip">湿度 45–60%</span></div>
             </div>
@@ -667,7 +667,7 @@ function flip(el,name){el.classList.toggle('on');toast(T(name)+' '+T(el.classLis
 function setMode(m,btn){
   document.querySelectorAll('#mode-seg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
   const h=document.getElementById('modeHero');
-  const map={auto:['AI 自动模式','维持中','24<small>–26℃</small>','正根据豆豆体温与环境，自动联动空调与加热垫',false],
+  const map={auto:['AI 自动模式','维持中','24<small>–26℃</small>','正根据熊二体温与环境，自动联动空调与加热垫',false],
     manual:['手动控制','由你掌控','26<small>℃</small>','已切换手动，可单独调节每台联动设备',false],
     eco:['节能优先','省电运行','25<small>–27℃</small>','在舒适前提下优先省电，预计再省 12% 能耗',false]};
   const d=map[m];h.classList.toggle('warm',m==='eco');
