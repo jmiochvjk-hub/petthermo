@@ -58,12 +58,9 @@ header.nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:.3s}
 .nav-inner{max-width:var(--maxw);margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
 header.nav.scrolled{background:rgba(255,255,255,.82);backdrop-filter:saturate(180%) blur(16px);
   box-shadow:0 1px 0 rgba(21,36,59,.07)}
-.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;letter-spacing:-.01em}
-.logo{width:38px;height:38px;border-radius:11px;background:var(--grad-thermal);position:relative;
-  box-shadow:0 6px 16px -6px rgba(255,107,53,.6);flex:none}
-.logo::after{content:"";position:absolute;inset:0;margin:auto;width:15px;height:15px;border-radius:50%;
-  border:3px solid #fff;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
-.brand small{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.brand{display:inline-flex;flex-direction:column;align-items:flex-start;gap:3px;line-height:1}
+.brand-logo{height:30px;width:auto;display:block}
+.brand small{display:block;font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding-left:1px}
 .nav-links{display:flex;align-items:center;gap:30px}
 .nav-links a{font-size:14.5px;font-weight:600;color:var(--ink-2);transition:.2s}
 .nav-links a:hover{color:var(--warm)}
@@ -278,8 +275,10 @@ header.nav.scrolled{background:rgba(255,255,255,.82);backdrop-filter:saturate(18
 
 /* ---------- product ---------- */
 .product{display:grid;grid-template-columns:1fr 1.05fr;gap:54px;align-items:center}
-.product-media{border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);position:relative;background:var(--soft-2)}
-.product-media img{width:100%;aspect-ratio:16/13;object-fit:cover}
+.product-media{border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);position:relative;background:#fff}
+.product-media img{width:100%;aspect-ratio:4/5;object-fit:contain}
+.spec-sheet{margin-top:56px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--line)}
+.spec-sheet img{width:100%;display:block}
 .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 0 30px}
 .spec{display:flex;gap:13px;align-items:flex-start}
 .spec .si{width:42px;height:42px;border-radius:12px;background:var(--soft);display:grid;place-items:center;color:var(--cool);flex:none}
@@ -396,8 +395,8 @@ body.anim .reveal.in{opacity:1;transform:none}
 <header class="nav" id="nav">
   <div class="nav-inner">
     <a class="brand" href="#top">
-      <span class="logo"></span>
-      <span>PetThermo<small>智能宠物热舒适管家</small></span>
+      <img class="brand-logo" src="assets/logo-nav.png" alt="PetThermo 智能宠物热舒适管家" />
+      <small>智能宠物热舒适管家</small>
     </a>
     <nav class="nav-links" id="navlinks">
       <a href="#solution">解决方案</a>
@@ -669,17 +668,17 @@ body.anim .reveal.in{opacity:1;transform:none}
       <div>
         <span class="eyebrow">产品</span>
         <h2 class="title">PetThermo <span class="grad-text">智能温控管家</span></h2>
-        <p class="lead">极致紧凑的桌面/壁挂立方体，亦可选嵌入宠物窝一体化设计，隐形融入家居环境。</p>
+        <p class="lead">约手机大小的桌面/壁挂机身，亦可选嵌入宠物窝一体化设计，隐形融入家居环境。</p>
       </div>
     </div>
     <div class="product">
-      <div class="product-media reveal"><img src="assets/product-cube.jpeg" alt="PetThermo 立方体设备渲染图" /></div>
+      <div class="product-media reveal"><img src="assets/device.jpg" alt="PetThermo 设备：AI 视觉摄像头 + 红外热成像传感器" /></div>
       <div class="reveal">
         <div class="spec-grid">
-          <div class="spec"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/></svg></span><div><b>80×80×40mm</b><span>极致紧凑，不占空间</span></div></div>
+          <div class="spec"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/></svg></span><div><b>180×120×65mm</b><span>约手机大小·桌面/壁挂</span></div></div>
           <div class="spec"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg></span><div><b>±0.3℃ 精度</b><span>高精度红外，非接触测温</span></div></div>
-          <div class="spec"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0118 0M6.5 12a5.5 5.5 0 0111 0"/></svg></span><div><b>0.5–3 米监测</b><span>识别 20+ 种宠物品种</span></div></div>
-          <div class="spec"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><b>红外 + 插座双控</b><span>联动空调、加热垫等设备</span></div></div>
+          <div class="spec"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0118 0M6.5 12a5.5 5.5 0 0111 0"/></svg></span><div><b>RGB 1080P 高清</b><span>AI 宠物状态识别</span></div></div>
+          <div class="spec"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><b>六模态感知</b><span>热成像·RGB·温湿度·压力·声音·光</span></div></div>
         </div>
         <div class="tiers">
           <div class="tier">
@@ -705,6 +704,9 @@ body.anim .reveal.in{opacity:1;transform:none}
         </div>
         <p style="font-size:12.5px;color:var(--muted-2);margin-top:16px">另可选「嵌入式宠物窝版」，与宠物窝一体化设计，美观又实用。</p>
       </div>
+    </div>
+    <div class="spec-sheet reveal">
+      <img src="assets/product-spec.jpg" alt="PetThermo 产品规格图：多模态感知系统、三视图尺寸、结构爆炸图与应用场景" />
     </div>
   </div>
 </section>
@@ -792,7 +794,7 @@ body.anim .reveal.in{opacity:1;transform:none}
   <div class="wrap">
     <div class="foot-grid">
       <div class="foot-brand">
-        <a class="brand" href="#top"><span class="logo"></span><span style="color:#fff">PetThermo<small style="color:rgba(255,255,255,.5)">智能宠物热舒适管家</small></span></a>
+        <a class="brand" href="#top"><img class="brand-logo" src="assets/logo-white.png" alt="PetThermo" /><small style="color:rgba(255,255,255,.55)">智能宠物热舒适管家</small></a>
         <p>基于多模态感知的宠物居家热舒适自动适配装置。用科技的温度，守护毛孩子的每一刻平安。</p>
       </div>
       <div class="foot-col">

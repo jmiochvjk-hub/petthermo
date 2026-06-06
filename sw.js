@@ -1,4 +1,4 @@
-const CACHE = 'petthermo-v1';
+const CACHE = 'petthermo-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -7,10 +7,10 @@ const ASSETS = [
   './icon-512.png',
   './assets/hero-dog.jpeg',
   './assets/vision-dog.jpeg',
-  './assets/product-cube.jpeg',
-  './assets/old-camera.jpeg',
-  './assets/old-coolmat.jpeg',
-  './assets/old-heatpad.jpeg'
+  './assets/device.jpg',
+  './assets/logo-nav.png',
+  './assets/logo-white.png',
+  './assets/product-spec.jpg'
 ];
 
 self.addEventListener('install', e => {
