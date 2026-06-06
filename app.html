@@ -610,7 +610,7 @@ const RF=()=>{ if(window.PTI18N) PTI18N.refresh(); };
 
 /* ---------- tab navigation ---------- */
 const views={home:'v-home',thermal:'v-thermal',data:'v-data',control:'v-control',me:'v-me'};
-const darkBar={home:true}; // hero is dark -> light status text on home
+const darkBar={}; // 顶部状态栏/应用栏始终在浅色设备底上，用深色字（hero 是独立的深色卡片，不在顶栏之下）
 function go(name){
   Object.values(views).forEach(id=>document.getElementById(id).classList.remove('active'));
   document.getElementById(views[name]).classList.add('active');
