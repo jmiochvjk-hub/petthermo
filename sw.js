@@ -1,7 +1,8 @@
-const CACHE = 'petthermo-v3';
+const CACHE = 'petthermo-v4';
 const ASSETS = [
   './',
   './index.html',
+  './app.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -36,10 +37,12 @@ self.addEventListener('fetch', e => {
       fetch(req)
         .then(res => {
           const copy = res.clone();
-          caches.open(CACHE).then(c => c.put('./index.html', copy));
+          caches.open(CACHE).then(c => c.put(req, copy));
           return res;
         })
-        .catch(() => caches.match('./index.html').then(r => r || caches.match('./')))
+        .catch(() => caches.match(req)
+          .then(r => r || caches.match('./index.html'))
+          .then(r => r || caches.match('./')))
     );
     return;
   }

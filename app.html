@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<title>PetThermo · 热舒适监测</title>
+<meta name="theme-color" content="#0E1A2B" />
+<link rel="icon" type="image/png" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="PetThermo" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --warm:#FF6B35; --warm2:#FF9E4D; --warm-soft:#FFF1E9;
+  --cool:#0FB6AE; --cool2:#1CC5D0; --cool-soft:#E7F8F7;
+  --ink:#15243B; --ink2:#33445F; --muted:#647189; --muted2:#94A0B2;
+  --line:#EAEFF5; --bg:#F3F6FB; --card:#FFFFFF;
+  --ok:#22C55E; --warn:#F59E0B; --danger:#F0584F;
+  --grad-thermal:linear-gradient(120deg,#FF6B35 0%,#FF9E4D 42%,#39C2C9 74%,#0FB6AE 100%);
+  --grad-warm:linear-gradient(135deg,#FF6B35,#FF9E4D);
+  --grad-cool:linear-gradient(135deg,#0FB6AE,#1CC5D0);
+  --shadow:0 16px 40px -20px rgba(21,36,59,.32);
+  --shadow-sm:0 8px 22px -14px rgba(21,36,59,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:"Sora",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  color:var(--ink);background:#0E1A2B;line-height:1.55;-webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center;
+}
+img{display:block;max-width:100%}
+[hidden]{display:none!important}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.muted{color:var(--muted)}
+
+/* ---------- device frame (desktop) ---------- */
+.stage{min-height:100%;width:100%;display:flex;align-items:center;justify-content:center;padding:26px;
+  background:radial-gradient(80% 60% at 50% 0%,#15263d,#0E1A2B 70%)}
+.device{
+  position:relative;width:402px;height:858px;background:var(--bg);border-radius:54px;overflow:hidden;
+  box-shadow:0 0 0 11px #0a0f17, 0 0 0 13px #232c3a, 0 50px 90px -30px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;
+}
+.app{display:flex;flex-direction:column;height:100%;position:relative}
+
+/* faux status bar */
+.statusbar{height:48px;display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 26px 7px;font-size:14px;font-weight:600;color:var(--ink);flex:none;z-index:6}
+.statusbar.dark{color:#fff}
+.sb-right{display:flex;align-items:center;gap:6px}
+.sb-right svg{display:block}
+
+/* app bar */
+.appbar{display:flex;align-items:center;gap:11px;padding:6px 18px 12px;flex:none;z-index:5}
+.appbar.onDark{color:#fff}
+.avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.8);
+  box-shadow:var(--shadow-sm);flex:none}
+.appbar .who{flex:1;min-width:0}
+.appbar .who b{font-size:16px;font-weight:700;display:flex;align-items:center;gap:7px}
+.appbar .who small{font-size:11.5px;opacity:.7;display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(34,197,94,.18);flex:none}
+.dot.live{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.25)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.iconbtn{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.7);
+  backdrop-filter:blur(8px);color:var(--ink);position:relative;flex:none}
+.appbar.onDark .iconbtn{background:rgba(255,255,255,.14);color:#fff}
+.badge{position:absolute;top:6px;right:7px;min-width:15px;height:15px;border-radius:9px;background:var(--danger);
+  color:#fff;font-size:9.5px;font-weight:700;display:grid;place-items:center;padding:0 3px;border:1.5px solid var(--card)}
+
+/* screen scroll area */
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 16px 104px}
+.screen::-webkit-scrollbar{display:none}
+.view{display:none;animation:fade .32s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* cards / shared */
+.card{background:var(--card);border-radius:22px;padding:16px;box-shadow:var(--shadow-sm);border:1px solid var(--line)}
+.sec-label{display:flex;align-items:center;justify-content:space-between;margin:22px 4px 11px}
+.sec-label h3{font-size:15px;font-weight:700}
+.sec-label a{font-size:12.5px;color:var(--cool);font-weight:600}
+.row{display:flex;gap:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;
+  background:var(--bg);color:var(--ink2);border:1px solid var(--line)}
+.chip svg{width:13px;height:13px}
+.pill-ok{background:rgba(34,197,94,.12);color:#15924e;border-color:transparent}
+
+/* ====== HOME hero ====== */
+.hero{position:relative;border-radius:26px;overflow:hidden;padding:20px 18px 18px;color:#fff;
+  background:linear-gradient(150deg,#11314f,#0c2238 55%,#0a1c30);box-shadow:var(--shadow)}
+.hero::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(70% 60% at 82% 18%,rgba(255,107,53,.55),transparent 60%),
+            radial-gradient(60% 50% at 12% 92%,rgba(15,182,174,.5),transparent 60%);}
+.hero>*{position:relative;z-index:1}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.hero-top .st{font-size:12px;font-weight:600;opacity:.85;display:flex;align-items:center;gap:6px}
+.comfort{display:flex;align-items:center;gap:18px;margin-top:6px}
+.ring{width:118px;height:118px;flex:none}
+.ring text.v{font-size:34px;font-weight:800;fill:#fff}
+.ring text.u{font-size:11px;font-weight:600;fill:rgba(255,255,255,.7)}
+.comfort .cdesc b{font-size:19px;font-weight:700;display:block;letter-spacing:-.01em}
+.comfort .cdesc p{font-size:12.5px;opacity:.8;margin-top:3px;line-height:1.5}
+.comfort .cdesc .tag{margin-top:9px;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
+  background:rgba(255,255,255,.14);padding:5px 10px;border-radius:999px}
+
+/* metric tiles */
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:14px}
+.metric{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:13px 14px;box-shadow:var(--shadow-sm)}
+.metric .mi{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;margin-bottom:9px}
+.metric b{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.metric b small{font-size:12px;font-weight:600;color:var(--muted);margin-left:2px}
+.metric span{font-size:11.5px;color:var(--muted);display:block;margin-top:1px}
+.metric .trend{font-size:10.5px;font-weight:600;margin-top:5px;display:inline-flex;align-items:center;gap:3px}
+.tint-warm{background:var(--warm-soft);color:var(--warm)}
+.tint-cool{background:var(--cool-soft);color:var(--cool)}
+.tint-blue{background:#EAF1FE;color:#3B73E8}
+.tint-purple{background:#F0EBFE;color:#7C5CDB}
+
+/* AI insight */
+.ai{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,#FFF6F0,#FDFBFF);
+  border:1px solid #FBE6D6}
+.ai .ai-ic{width:38px;height:38px;border-radius:12px;background:var(--grad-warm);display:grid;place-items:center;flex:none;
+  box-shadow:0 8px 18px -8px rgba(255,107,53,.7)}
+.ai .ai-tx b{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+.ai .ai-tx p{font-size:12.5px;color:var(--ink2);margin-top:4px;line-height:1.6}
+
+/* thermal preview / view */
+.thermal{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;background:#04162a;box-shadow:var(--shadow-sm)}
+.thermal.big{aspect-ratio:3/4}
+.thermal-img{position:absolute;inset:0}
+.thermal-img{background:
+  radial-gradient(26% 16% at 53% 60%, #fff 0%, #ffe49a 22%, rgba(255,120,30,.0) 60%),
+  radial-gradient(52% 42% at 52% 68%, rgba(255,60,0,.95), rgba(255,150,30,.8) 38%, rgba(255,214,90,.4) 60%, transparent 76%),
+  radial-gradient(40% 34% at 36% 40%, rgba(255,120,30,.5), transparent 64%),
+  radial-gradient(120% 100% at 50% 40%, #0b2b4d 0%, #07203a 55%, #04152a 100%);}
+.thermal-grid{position:absolute;inset:0;opacity:.16;
+  background-image:linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px);
+  background-size:34px 34px;mix-blend-mode:overlay}
+.rgb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.crosshair{position:absolute;width:54px;height:54px;transform:translate(-50%,-50%);pointer-events:none}
+.crosshair::before,.crosshair::after{content:"";position:absolute;background:rgba(255,255,255,.9)}
+.crosshair::before{left:50%;top:0;bottom:0;width:1.5px;transform:translateX(-50%)}
+.crosshair::after{top:50%;left:0;right:0;height:1.5px;transform:translateY(-50%)}
+.crosshair span{position:absolute;left:60%;top:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;
+  padding:2px 7px;border-radius:8px;white-space:nowrap}
+.thermal-meta{position:absolute;left:12px;top:11px;display:flex;gap:7px;font-size:10.5px;font-weight:600;color:#fff;z-index:2}
+.thermal-meta span{background:rgba(0,0,0,.42);backdrop-filter:blur(4px);padding:4px 9px;border-radius:9px}
+.thermal-live{position:absolute;right:12px;top:11px;display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+  color:#fff;background:rgba(240,88,79,.85);padding:4px 9px;border-radius:9px;z-index:2}
+.thermal-live i{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse2 1.4s infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
+.scale{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:10.5px;font-weight:600;color:var(--muted)}
+.scale-bar{flex:1;height:9px;border-radius:6px;
+  background:linear-gradient(90deg,#0FB6AE,#1CC5D0 22%,#F9E795 52%,#FF9E4D 76%,#FF3B30)}
+.toggle2{display:flex;background:var(--bg);border-radius:13px;padding:4px;gap:4px;border:1px solid var(--line)}
+.toggle2 button{flex:1;padding:8px;border-radius:10px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.toggle2 button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow-sm)}
+
+/* sensor grid */
+.sensors{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.sensor{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:11px 12px}
+.sensor .s-ic{width:30px;height:30px;border-radius:9px;background:var(--cool-soft);color:var(--cool);display:grid;place-items:center;flex:none}
+.sensor b{font-size:12.5px;font-weight:600;display:block}
+.sensor span{font-size:10.5px;color:var(--ok);font-weight:600}
+
+/* charts */
+.chart-card h4{font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
+.chart-card h4 em{font-style:normal;font-size:11.5px;color:var(--muted);font-weight:600}
+.chart{width:100%;height:128px;margin-top:8px;overflow:visible}
+.xlabels{display:flex;justify-content:space-between;font-size:9.5px;color:var(--muted2);margin-top:5px;padding:0 2px}
+.legend{display:flex;gap:14px;margin-top:8px;font-size:11px;color:var(--muted)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;padding:7px 0;font-size:12px;font-weight:600;border-radius:9px;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow-sm)}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.stat3 .s{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 10px;text-align:center}
+.stat3 .s b{font-size:19px;font-weight:800;display:block;letter-spacing:-.02em}
+.stat3 .s b.g{background:var(--grad-warm);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat3 .s span{font-size:10.5px;color:var(--muted)}
+
+/* control */
+.mode-hero{background:linear-gradient(135deg,#0FB6AE,#1CC5D0);color:#fff;border-radius:22px;padding:17px;box-shadow:var(--shadow)}
+.mode-hero.warm{background:linear-gradient(135deg,#FF6B35,#FF9E4D)}
+.mode-hero .mh-top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;opacity:.95}
+.mode-hero .mh-temp{font-size:46px;font-weight:800;letter-spacing:-.03em;margin-top:4px;line-height:1}
+.mode-hero .mh-temp small{font-size:18px;font-weight:600;opacity:.85}
+.mode-hero .mh-sub{font-size:12px;opacity:.9;margin-top:3px}
+.targetbar{margin-top:14px}
+.targetbar .tb-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+.targetbar .tb-head b{color:var(--ink);font-weight:700}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;border-radius:6px;
+  background:linear-gradient(90deg,var(--cool),var(--warm2));outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;
+  box-shadow:0 3px 10px rgba(21,36,59,.35),0 0 0 2px var(--warm);cursor:pointer}
+.dev{display:flex;align-items:center;gap:13px;padding:13px 4px}
+.dev+.dev{border-top:1px solid var(--line)}
+.dev .d-ic{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:none}
+.dev .d-tx{flex:1;min-width:0}
+.dev .d-tx b{font-size:14px;font-weight:600;display:block}
+.dev .d-tx span{font-size:11.5px;color:var(--muted)}
+.switch{width:50px;height:30px;border-radius:18px;background:#D7DEE8;position:relative;transition:.25s;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);transition:.25s}
+.switch.on{background:var(--cool)}
+.switch.on::after{left:23px}
+.switch.off-disabled{background:#EEF1F5;opacity:.6}
+.scenes{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+.scene{display:flex;align-items:center;gap:11px;background:var(--card);border:1.5px solid var(--line);border-radius:17px;padding:13px 12px;transition:.2s}
+.scene.on{border-color:var(--warm);background:var(--warm-soft)}
+.scene .sc-ic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--bg);flex:none}
+.scene.on .sc-ic{background:var(--warm);color:#fff}
+.scene b{font-size:13px;font-weight:600;display:block}
+.scene span{font-size:10.5px;color:var(--muted)}
+
+/* profile */
+.petcard{display:flex;gap:14px;align-items:center}
+.petcard img{width:64px;height:64px;border-radius:20px;object-fit:cover;flex:none;box-shadow:var(--shadow-sm)}
+.petcard .p-tx b{font-size:18px;font-weight:700}
+.petcard .p-tx p{font-size:12px;color:var(--muted);margin-top:2px}
+.petcard .p-tx .tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.kv{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:14px}
+.kv .k{background:var(--bg);border-radius:14px;padding:11px 12px}
+.kv .k span{font-size:10.5px;color:var(--muted);display:block}
+.kv .k b{font-size:14px;font-weight:700}
+.list .li{display:flex;align-items:center;gap:13px;padding:13px 4px}
+.list .li+.li{border-top:1px solid var(--line)}
+.list .li .l-ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none}
+.list .li .l-tx{flex:1;min-width:0}
+.list .li .l-tx b{font-size:13.5px;font-weight:600;display:block}
+.list .li .l-tx span{font-size:11.5px;color:var(--muted)}
+.list .li .chev{color:var(--muted2)}
+.alert .a-ic{background:var(--warm-soft);color:var(--warm)}
+.alert.blue .a-ic{background:#EAF1FE;color:#3B73E8}
+.alert.ok .a-ic{background:rgba(34,197,94,.12);color:var(--ok)}
+
+/* bottom tab bar */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:84px;padding:9px 12px calc(18px + env(safe-area-inset-bottom));
+  display:flex;justify-content:space-around;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(20px);
+  border-top:1px solid var(--line);z-index:10}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted2);font-size:10px;font-weight:600;
+  padding-top:4px;transition:.18s}
+.tab svg{width:23px;height:23px}
+.tab.active{color:var(--warm)}
+.tab .tdot{width:5px;height:5px;border-radius:50%;background:var(--warm);opacity:0;transition:.2s}
+.tab.active .tdot{opacity:1}
+
+/* toast */
+.toast{position:absolute;left:50%;bottom:104px;translate:-50% 0;
+  background:rgba(21,36,59,.94);color:#fff;font-size:12.5px;font-weight:600;padding:10px 16px;border-radius:13px;
+  z-index:30;opacity:0;pointer-events:none;transition:.3s;white-space:nowrap;box-shadow:var(--shadow)}
+.toast.show{opacity:1;bottom:114px}
+
+.app-hint{display:none}
+
+/* phone full-screen mode */
+@media (max-width:520px){
+  body{background:var(--bg);display:block}
+  .stage{padding:0;background:none;min-height:100dvh}
+  .device{width:100vw;height:100dvh;border-radius:0;box-shadow:none}
+  .statusbar{height:max(40px,env(safe-area-inset-top))}
+  .tabbar{position:fixed}
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="device">
+    <div class="app">
+
+      <!-- status bar -->
+      <div class="statusbar" id="statusbar">
+        <span id="clock">9:41</span>
+        <span class="sb-right">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 2.2c2 0 3.8.8 5.2 2.1l1.4-1.5A9.4 9.4 0 0 0 8 .2 9.4 9.4 0 0 0 1.4 2.8l1.4 1.5A7.4 7.4 0 0 1 8 2.2Zm0 3.3c1.1 0 2.1.4 2.9 1.2l1.4-1.5A6 6 0 0 0 8 3.5a6 6 0 0 0-4.3 1.7l1.4 1.5A4 4 0 0 1 8 5.5Zm0 3.2L9.8 7A2.5 2.5 0 0 0 8 6.3 2.5 2.5 0 0 0 6.2 7L8 8.7Z"/></svg>
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="currentColor" opacity="0.4"/><rect x="2" y="2" width="17" height="8" rx="1.6" fill="currentColor"/><rect x="24" y="3.5" width="1.6" height="5" rx="0.8" fill="currentColor" opacity="0.4"/></svg>
+        </span>
+      </div>
+
+      <!-- app bar -->
+      <div class="appbar" id="appbar">
+        <img class="avatar" src="assets/hero-dog.jpeg" alt="豆豆" />
+        <div class="who">
+          <b id="ab-name">豆豆 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="opacity:.5"><path d="M6 9l6 6 6-6"/></svg></b>
+          <small><span class="dot live"></span> <span id="ab-status">设备在线 · 客厅 · 实时守护中</span></small>
+        </div>
+        <button class="iconbtn" onclick="toast('暂无新预警 · 一切安好 🐾')" aria-label="通知">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="badge">1</span>
+        </button>
+      </div>
+
+      <!-- ============ SCREENS ============ -->
+      <div class="screen" id="screen">
+
+        <!-- ===== VIEW: 监测 ===== -->
+        <section class="view active" id="v-home">
+          <div class="hero">
+            <div class="hero-top">
+              <span class="st"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 实时热舒适</span>
+              <span class="st" id="home-time">刚刚更新</span>
+            </div>
+            <div class="comfort">
+              <svg class="ring" viewBox="0 0 120 120">
+                <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FF6B35"/><stop offset="0.6" stop-color="#FF9E4D"/><stop offset="1" stop-color="#1CC5D0"/>
+                </linearGradient></defs>
+                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="11"/>
+                <circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="url(#rg)" stroke-width="11" stroke-linecap="round"
+                  stroke-dasharray="326.7" stroke-dashoffset="26" transform="rotate(-90 60 60)"/>
+                <text class="v" id="ringVal" x="60" y="58" text-anchor="middle" dominant-baseline="middle">92</text>
+                <text class="u" x="60" y="78" text-anchor="middle">舒适指数</text>
+              </svg>
+              <div class="cdesc">
+                <b id="home-mood">体感舒适</b>
+                <p>豆豆正在安睡，体温与环境都在理想区间。</p>
+                <span class="tag"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> AI 自动维持中</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric">
+              <div class="mi tint-warm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg></div>
+              <b id="m-bodytemp">38.6<small>°C</small></b><span>宠物体温</span>
+              <div class="trend" style="color:var(--ok)">正常 · 38.3–39.2℃</div>
+            </div>
+            <div class="metric">
+              <div class="mi tint-cool"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v8a6 6 0 1 0 8 0V6a4 4 0 0 0-4-4z"/></svg></div>
+              <b id="m-room">24.5<small>°C</small></b><span>环境温度</span>
+              <div class="trend muted">舒适区 20–25℃</div>
+            </div>
+            <div class="metric">
+              <div class="mi tint-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.7S5 10.4 5 15a7 7 0 0 0 14 0c0-4.6-7-12.3-7-12.3z"/></svg></div>
+              <b id="m-humid">55<small>%</small></b><span>相对湿度</span>
+              <div class="trend muted">适宜 45–60%</div>
+            </div>
+            <div class="metric">
+              <div class="mi tint-purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg></div>
+              <b id="m-act">安静</b><span>活动状态</span>
+              <div class="trend muted">深睡 1h 12m</div>
+            </div>
+          </div>
+
+          <div class="sec-label"><h3>实时热成像</h3><a onclick="go('thermal')">查看 ›</a></div>
+          <div class="thermal" onclick="go('thermal')">
+            <div class="thermal-img"></div>
+            <div class="thermal-grid"></div>
+            <div class="thermal-meta"><span>最高 38.6°</span><span>均温 31.2°</span></div>
+            <div class="thermal-live"><i></i> LIVE</div>
+            <div class="crosshair" style="left:53%;top:64%"><span>38.6°</span></div>
+          </div>
+
+          <div class="sec-label"><h3>AI 管家</h3></div>
+          <div class="card ai">
+            <div class="ai-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l1.9 4.1L18 9l-4.1 1.9L12 15l-1.9-4.1L6 9l4.1-1.9z"/><circle cx="18" cy="18" r="2.4"/></svg></div>
+            <div class="ai-tx">
+              <b>豆豆此刻很惬意 🐾</b>
+              <p id="ai-text">凌晨环境温度下探至 23.8℃，已为豆豆轻启「加热垫·低档」，预计 8 分钟内回到 24–26℃ 舒适区，无需打扰它的睡眠。</p>
+            </div>
+          </div>
+
+          <div class="sec-label"><h3>设备联动</h3><a onclick="go('control')">管理 ›</a></div>
+          <div class="row" style="flex-wrap:wrap;gap:9px">
+            <span class="chip pill-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg> 空调 26℃</span>
+            <span class="chip pill-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/></svg> 加热垫 低档</span>
+            <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg> 循环风扇 关</span>
+          </div>
+        </section>
+
+        <!-- ===== VIEW: 热成像 ===== -->
+        <section class="view" id="v-thermal">
+          <div class="sec-label" style="margin-top:6px"><h3>实时画面</h3><span class="chip pill-ok"><span class="dot"></span> 在线</span></div>
+          <div class="thermal big">
+            <div class="thermal-img" id="t-thermal"></div>
+            <img class="rgb-img" id="t-rgb" src="assets/hero-dog.jpeg" alt="实景" hidden />
+            <div class="thermal-grid" id="t-grid"></div>
+            <div class="thermal-meta"><span id="t-max">最高 38.6°</span><span id="t-avg">均温 31.2°</span><span id="t-min">最低 23.8°</span></div>
+            <div class="thermal-live"><i></i> LIVE</div>
+            <div class="crosshair" style="left:52%;top:62%"><span id="t-cross">38.6°</span></div>
+          </div>
+          <div class="scale"><span>18°</span><div class="scale-bar"></div><span>40°</span></div>
+          <div class="toggle2" style="margin-top:14px">
+            <button class="on" id="tg-thermal" onclick="setView2('thermal')">热成像</button>
+            <button id="tg-rgb" onclick="setView2('rgb')">实景 RGB</button>
+          </div>
+
+          <div class="sec-label"><h3>六模态感知</h3><span class="muted" style="font-size:11.5px">全部正常</span></div>
+          <div class="sensors">
+            <div class="sensor"><div class="s-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg></div><div><b>红外热成像</b><span>±0.3℃</span></div></div>
+            <div class="sensor"><div class="s-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="12" cy="12.5" r="3.2"/></svg></div><div><b>RGB 摄像头</b><span>1080P</span></div></div>
+            <div class="sensor"><div class="s-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v8a6 6 0 1 0 8 0V6a4 4 0 0 0-4-4z"/></svg></div><div><b>温湿度</b><span>24.5℃·55%</span></div></div>
+            <div class="sensor"><div class="s-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16s2-4 8-4 8 4 8 4"/><path d="M4 12h16"/></svg></div><div><b>压力传感</b><span>已就坐</span></div></div>
+            <div class="sensor"><div class="s-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h3l2-6 4 14 2-8 2 4h5"/></svg></div><div><b>麦克风阵列</b><span>呼吸平稳</span></div></div>
+            <div class="sensor"><div class="s-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><div><b>环境光</b><span>夜间 12lx</span></div></div>
+          </div>
+
+          <div class="sec-label"><h3>AI 行为识别</h3></div>
+          <div class="card" style="display:flex;align-items:center;gap:13px">
+            <div class="mi tint-purple" style="width:44px;height:44px;border-radius:14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+            <div style="flex:1"><b style="font-size:14px">侧卧深睡</b><p class="muted" style="font-size:12px">姿态舒展、呼吸 18 次/分，判定为安稳睡眠。</p></div>
+          </div>
+        </section>
+
+        <!-- ===== VIEW: 数据 ===== -->
+        <section class="view" id="v-data">
+          <div class="seg" style="margin-top:8px" id="data-seg">
+            <button class="on" onclick="setRange('day',this)">今日</button>
+            <button onclick="setRange('week',this)">本周</button>
+            <button onclick="setRange('month',this)">本月</button>
+          </div>
+
+          <div class="stat3" style="margin-top:14px">
+            <div class="s"><b class="g" id="st-comfort">89%</b><span>平均舒适度</span></div>
+            <div class="s"><b id="st-save" style="color:var(--cool)">32%</b><span>日均节能</span></div>
+            <div class="s"><b id="st-sleep" style="color:var(--ink)">6.8h</b><span>深睡时长</span></div>
+          </div>
+
+          <div class="sec-label"><h3>宠物体温</h3><a onclick="toast('已导出本段体温数据')">导出</a></div>
+          <div class="card chart-card">
+            <h4>体温曲线 <em id="lbl-temp">今日 · ℃</em></h4>
+            <svg class="chart" id="chart-temp" viewBox="0 0 320 128" preserveAspectRatio="none"></svg>
+            <div class="xlabels" id="x-temp"></div>
+            <div class="legend"><span><i style="background:var(--warm)"></i>体温</span><span><i style="background:rgba(34,197,94,.5)"></i>舒适区间</span></div>
+          </div>
+
+          <div class="sec-label"><h3>热舒适指数</h3></div>
+          <div class="card chart-card">
+            <h4>舒适度 <em>越高越好</em></h4>
+            <svg class="chart" id="chart-comfort" viewBox="0 0 320 128" preserveAspectRatio="none"></svg>
+            <div class="xlabels" id="x-comfort"></div>
+          </div>
+
+          <div class="sec-label"><h3>环境温湿度</h3></div>
+          <div class="card chart-card">
+            <h4>居家环境 <em>温度 / 湿度</em></h4>
+            <svg class="chart" id="chart-env" viewBox="0 0 320 128" preserveAspectRatio="none"></svg>
+            <div class="xlabels" id="x-env"></div>
+            <div class="legend"><span><i style="background:var(--warm2)"></i>温度℃</span><span><i style="background:var(--cool)"></i>湿度%</span></div>
+          </div>
+
+          <div class="sec-label"><h3>睡眠 / 活动</h3></div>
+          <div class="card chart-card">
+            <h4><span id="lbl-sleep">今日活动 · 睡眠</span> <em>小时</em></h4>
+            <svg class="chart" id="chart-sleep" viewBox="0 0 320 128" preserveAspectRatio="none"></svg>
+            <div class="xlabels" id="x-sleep"></div>
+          </div>
+        </section>
+
+        <!-- ===== VIEW: 调节 ===== -->
+        <section class="view" id="v-control">
+          <div class="mode-hero" id="modeHero" style="margin-top:8px">
+            <div class="mh-top"><span id="mh-mode">AI 自动模式</span><span id="mh-state">维持中</span></div>
+            <div class="mh-temp" id="mh-temp">24<small>–26℃</small></div>
+            <div class="mh-sub" id="mh-sub">正根据豆豆体温与环境，自动联动空调与加热垫</div>
+          </div>
+
+          <div class="seg" style="margin-top:14px" id="mode-seg">
+            <button class="on" onclick="setMode('auto',this)">AI 自动</button>
+            <button onclick="setMode('manual',this)">手动控制</button>
+            <button onclick="setMode('eco',this)">节能优先</button>
+          </div>
+
+          <div class="card targetbar" style="margin-top:14px">
+            <div class="tb-head"><span>目标温区</span><span><b id="tgt-val">24 – 26</b> ℃</span></div>
+            <input type="range" id="tgt" min="18" max="30" value="25" oninput="onTarget(this.value)" />
+            <div class="tb-head" style="margin:6px 0 0"><span>凉爽 18℃</span><span>温暖 30℃</span></div>
+          </div>
+
+          <div class="sec-label"><h3>联动设备</h3><span class="muted" style="font-size:11.5px">3 在线</span></div>
+          <div class="card">
+            <div class="dev">
+              <div class="d-ic tint-cool"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="9" rx="2"/><path d="M6 18c0 1.5 1 2 2 2M12 18c0 1.5 1 2 2 2M18 18c0 1.5-1 2-2 2"/></svg></div>
+              <div class="d-tx"><b>客厅空调</b><span>制冷 26℃ · 自动风</span></div>
+              <div class="switch on" onclick="flip(this,'客厅空调')"></div>
+            </div>
+            <div class="dev">
+              <div class="d-ic tint-warm"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9c0 1.5-1 1.5-1 3s1 1.5 1 3M16 9c0 1.5-1 1.5-1 3s1 1.5 1 3"/></svg></div>
+              <div class="d-tx"><b>宠物窝加热垫</b><span>低档 · 38℃恒温</span></div>
+              <div class="switch on" onclick="flip(this,'加热垫')"></div>
+            </div>
+            <div class="dev">
+              <div class="d-ic tint-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 4a8 8 0 0 1 0 16M12 4a8 8 0 0 0 0 16"/></svg></div>
+              <div class="d-tx"><b>循环风扇</b><span>待机 · 联动可用</span></div>
+              <div class="switch" onclick="flip(this,'循环风扇')"></div>
+            </div>
+            <div class="dev">
+              <div class="d-ic" style="background:#EEF1F5;color:var(--muted2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v6M8 21h8M12 13v8"/><circle cx="12" cy="11" r="3"/></svg></div>
+              <div class="d-tx"><b>加湿器</b><span style="color:var(--muted2)">离线</span></div>
+              <div class="switch off-disabled"></div>
+            </div>
+          </div>
+
+          <div class="sec-label"><h3>情景模式</h3></div>
+          <div class="scenes">
+            <button class="scene on" onclick="setScene(this,'居家陪伴')"><div class="sc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg></div><div><b>居家陪伴</b><span>恒温恒湿</span></div></button>
+            <button class="scene" onclick="setScene(this,'外出看护')"><div class="sc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div><div><b>外出看护</b><span>省电守护</span></div></button>
+            <button class="scene" onclick="setScene(this,'夜间睡眠')"><div class="sc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A8 8 0 1 1 11.2 3a6.2 6.2 0 0 0 9.8 9.8z"/></svg></div><div><b>夜间睡眠</b><span>静音微调</span></div></button>
+            <button class="scene" onclick="setScene(this,'酷暑降温')"><div class="sc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><div><b>酷暑降温</b><span>主动制冷</span></div></button>
+          </div>
+        </section>
+
+        <!-- ===== VIEW: 我的 ===== -->
+        <section class="view" id="v-me">
+          <div class="card petcard" style="margin-top:8px">
+            <img src="assets/hero-dog.jpeg" alt="豆豆" />
+            <div class="p-tx">
+              <b>豆豆</b>
+              <p>金毛寻回犬 · 3 岁 · 28kg</p>
+              <div class="tags"><span class="chip">适宜 20–25℃</span><span class="chip">湿度 45–60%</span></div>
+            </div>
+          </div>
+          <div class="kv">
+            <div class="k"><span>本月平均舒适度</span><b>91%</b></div>
+            <div class="k"><span>累计守护</span><b>184 天</b></div>
+            <div class="k"><span>预警处理</span><b>27 次</b></div>
+            <div class="k"><span>累计节能</span><b>约 86 度</b></div>
+          </div>
+
+          <div class="sec-label"><h3>我的设备</h3><a onclick="toast('扫码添加新设备')">+ 添加</a></div>
+          <div class="card list">
+            <div class="li">
+              <img class="l-ic" src="icon-192.png" alt="" style="object-fit:cover" />
+              <div class="l-tx"><b>PetThermo Pro</b><span>客厅 · 在线 · 固件 v2.1.0</span></div>
+              <span class="chip pill-ok">在线</span>
+            </div>
+            <div class="li">
+              <div class="l-ic tint-warm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9c0 1.5-1 1.5-1 3s1 1.5 1 3"/></svg></div>
+              <div class="l-tx"><b>嵌入式宠物窝</b><span>卧室 · 在线 · 加热+压力</span></div>
+              <span class="chip pill-ok">在线</span>
+            </div>
+          </div>
+
+          <div class="sec-label"><h3>预警记录</h3><a onclick="toast('查看全部 27 条记录')">全部</a></div>
+          <div class="card list">
+            <div class="li alert">
+              <div class="l-ic a-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+              <div class="l-tx"><b>检测到短暂喘息</b><span>昨日 14:20 · 已开启降温，2 分钟恢复</span></div>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+            <div class="li alert blue">
+              <div class="l-ic a-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 0-4 4v8a6 6 0 1 0 8 0V6a4 4 0 0 0-4-4z"/></svg></div>
+              <div class="l-tx"><b>夜间环境偏凉</b><span>前日 03:10 · 自动启动加热垫</span></div>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+            <div class="li alert ok">
+              <div class="l-ic a-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
+              <div class="l-tx"><b>周热舒适报告已生成</b><span>本周综合评分 A · 点击查看</span></div>
+              <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+          </div>
+
+          <div class="sec-label"><h3>更多</h3></div>
+          <div class="card list">
+            <div class="li" onclick="toast('热舒适周报 · A 级')"><div class="l-ic tint-purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 12l3 3 5-6"/></svg></div><div class="l-tx"><b>热舒适周报</b><span>每周一推送</span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+            <div class="li" onclick="toast('提醒与推送设置')"><div class="l-ic tint-cool"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg></div><div class="l-tx"><b>提醒设置</b><span>预警阈值 · 推送方式</span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+            <div class="li" onclick="location.href='./'"><div class="l-ic tint-warm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div><div class="l-tx"><b>关于 PetThermo</b><span>返回产品官网</span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>
+          </div>
+          <p style="text-align:center;font-size:11px;color:var(--muted2);margin:18px 0 4px">PetThermo App · 演示版 v1.0 · 大赛展示</p>
+        </section>
+
+      </div><!-- /screen -->
+
+      <!-- toast -->
+      <div class="toast" id="toast"></div>
+
+      <!-- bottom tabs -->
+      <nav class="tabbar">
+        <button class="tab active" data-tab="home" onclick="go('home')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>监测<span class="tdot"></span>
+        </button>
+        <button class="tab" data-tab="thermal" onclick="go('thermal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V5a2.5 2.5 0 0 0-5 0v9.76a4.5 4.5 0 1 0 5 0z"/></svg>热成像<span class="tdot"></span>
+        </button>
+        <button class="tab" data-tab="data" onclick="go('data')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3"/></svg>数据<span class="tdot"></span>
+        </button>
+        <button class="tab" data-tab="control" onclick="go('control')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h11M4 12h7M4 18h13"/><circle cx="18" cy="6" r="2.4"/><circle cx="14" cy="12" r="2.4"/><circle cx="19" cy="18" r="2.4"/></svg>调节<span class="tdot"></span>
+        </button>
+        <button class="tab" data-tab="me" onclick="go('me')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>我的<span class="tdot"></span>
+        </button>
+      </nav>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- tab navigation ---------- */
+const views={home:'v-home',thermal:'v-thermal',data:'v-data',control:'v-control',me:'v-me'};
+const darkBar={home:true}; // hero is dark -> light status text on home
+function go(name){
+  Object.values(views).forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById(views[name]).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.getElementById('screen').scrollTop=0;
+  const sb=document.getElementById('statusbar'), ab=document.getElementById('appbar');
+  sb.classList.toggle('dark',!!darkBar[name]);
+  ab.classList.toggle('onDark',!!darkBar[name]);
+  if(name==='data') setTimeout(drawAll,30);
+}
+
+/* ---------- clock ---------- */
+function tick(){const d=new Date();document.getElementById('clock').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');}
+tick();setInterval(tick,10000);
+
+/* ---------- toast ---------- */
+let toT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toT);toT=setTimeout(()=>t.classList.remove('show'),1900);}
+
+/* ---------- live data simulation ---------- */
+function rnd(a,b,d=1){return (a+Math.random()*(b-a)).toFixed(d);}
+function setRing(v){const C=326.726;document.getElementById('ringArc').setAttribute('stroke-dashoffset',(C*(1-v/100)).toFixed(1));document.getElementById('ringVal').textContent=v;}
+function live(){
+  const bt=rnd(38.4,38.8), rt=rnd(24.1,24.9), hu=Math.round(rnd(53,57,0)), sc=Math.round(rnd(90,94,0));
+  document.getElementById('m-bodytemp').innerHTML=bt+'<small>°C</small>';
+  document.getElementById('m-room').innerHTML=rt+'<small>°C</small>';
+  document.getElementById('m-humid').innerHTML=hu+'<small>%</small>';
+  setRing(sc);
+  document.getElementById('t-cross').textContent=bt+'°';
+  document.getElementById('t-max').textContent='最高 '+bt+'°';
+}
+setRing(92);
+setInterval(live,3200);
+
+/* ---------- thermal / rgb toggle ---------- */
+function setView2(m){
+  const isT=m==='thermal';
+  document.getElementById('t-thermal').hidden=!isT;
+  document.getElementById('t-grid').style.opacity=isT?'':'0';
+  document.getElementById('t-rgb').hidden=isT;
+  document.getElementById('tg-thermal').classList.toggle('on',isT);
+  document.getElementById('tg-rgb').classList.toggle('on',!isT);
+}
+
+/* ---------- control ---------- */
+function flip(el,name){el.classList.toggle('on');toast(name+(el.classList.contains('on')?' 已开启':' 已关闭'));}
+function setMode(m,btn){
+  document.querySelectorAll('#mode-seg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  const h=document.getElementById('modeHero');
+  const map={auto:['AI 自动模式','维持中','24<small>–26℃</small>','正根据豆豆体温与环境，自动联动空调与加热垫',false],
+    manual:['手动控制','由你掌控','26<small>℃</small>','已切换手动，可单独调节每台联动设备',false],
+    eco:['节能优先','省电运行','25<small>–27℃</small>','在舒适前提下优先省电，预计再省 12% 能耗',false]};
+  const d=map[m];h.classList.toggle('warm',m==='eco');
+  document.getElementById('mh-mode').textContent=d[0];document.getElementById('mh-state').textContent=d[1];
+  document.getElementById('mh-temp').innerHTML=d[2];document.getElementById('mh-sub').textContent=d[3];
+  toast('已切换 · '+d[0]);
+}
+function onTarget(v){v=+v;const lo=v-1,hi=v+1;document.getElementById('tgt-val').textContent=lo+' – '+hi;document.getElementById('mh-temp').innerHTML=lo+'<small>–'+hi+'℃</small>';}
+function setScene(btn,name){document.querySelectorAll('.scene').forEach(s=>s.classList.remove('on'));btn.classList.add('on');toast('情景已切换 · '+name);}
+
+/* ---------- data range ---------- */
+const DATA={
+  day:{x:['0','4','8','12','16','20','现在'],
+    temp:[38.5,38.4,38.6,38.7,38.6,38.5,38.6],
+    comfort:[88,90,92,94,91,90,92],
+    envT:[23.6,23.4,24.2,25.1,24.8,24.3,24.5],
+    envH:[57,57,55,53,53,55,55],
+    sleep:[1.2,2.1,0.4,0,0.3,1.6,0.0], stats:['89%','32%','6.8h']},
+  week:{x:['一','二','三','四','五','六','日'],
+    temp:[38.6,38.5,38.7,38.6,38.5,38.6,38.6],
+    comfort:[90,88,92,91,93,89,92],
+    envT:[24.2,24.6,23.9,24.4,24.8,24.1,24.5],
+    envH:[55,54,57,56,53,56,55],
+    sleep:[6.5,7.0,6.2,7.4,6.8,7.1,6.6], stats:['91%','29%','6.9h']},
+  month:{x:['1周','2周','3周','4周'],
+    temp:[38.6,38.5,38.6,38.7],
+    comfort:[90,92,89,93],
+    envT:[24.3,24.6,24.1,24.5],
+    envH:[55,54,56,55],
+    sleep:[6.7,6.9,6.6,7.0], stats:['91%','31%','6.8h']}
+};
+let range='day';
+function setRange(r,btn){range=r;document.querySelectorAll('#data-seg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  const s=DATA[r].stats;document.getElementById('st-comfort').textContent=s[0];document.getElementById('st-save').textContent=s[1];document.getElementById('st-sleep').textContent=s[2];
+  document.getElementById('lbl-temp').textContent=(r==='day'?'今日':r==='week'?'本周':'本月')+' · ℃';
+  document.getElementById('lbl-sleep').textContent=(r==='day'?'今日活动 · 睡眠':r==='week'?'近 7 日睡眠':'近 4 周睡眠');
+  drawAll();}
+
+/* ---------- mini SVG charts ---------- */
+function pts(vals,W,H,pad,min,max){
+  const n=vals.length, iw=W-pad*2, ih=H-pad*2;
+  return vals.map((v,i)=>{const x=pad+(n===1?iw/2:iw*i/(n-1));const y=pad+ih*(1-(v-min)/(max-min));return [x,y];});
+}
+function lineChart(id,vals,color,opt={}){
+  const svg=document.getElementById(id);const W=320,H=128,pad=14;
+  const min=opt.min!=null?opt.min:Math.min(...vals)-(opt.padv||0), max=opt.max!=null?opt.max:Math.max(...vals)+(opt.padv||0);
+  const P=pts(vals,W,H,pad,min,max);
+  const d=P.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area='M'+P[0][0].toFixed(1)+' '+(H-pad)+' '+P.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+' L'+P[P.length-1][0].toFixed(1)+' '+(H-pad)+' Z';
+  let band='';
+  if(opt.band){const y1=pad+(H-pad*2)*(1-(opt.band[1]-min)/(max-min)),y2=pad+(H-pad*2)*(1-(opt.band[0]-min)/(max-min));
+    band=`<rect x="${pad}" y="${y1.toFixed(1)}" width="${W-pad*2}" height="${(y2-y1).toFixed(1)}" fill="rgba(34,197,94,.12)" rx="4"/>`;}
+  const gid=id+'-g';
+  const dots=opt.dots!==false?P.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.6" fill="#fff" stroke="${color}" stroke-width="2"/>`).join(''):'';
+  const last=P[P.length-1];
+  svg.innerHTML=`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity="0.22"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    ${band}<path d="${area}" fill="url(#${gid})"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>${dots}
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4" fill="${color}"/>`;
+}
+function dualChart(id,a,b,ca,cb){
+  const svg=document.getElementById(id);const W=320,H=128,pad=14;
+  const mk=(vals,min,max,c)=>{const P=pts(vals,W,H,pad,min,max);
+    const d=P.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const dots=P.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.4" fill="#fff" stroke="${c}" stroke-width="2"/>`).join('');
+    return `<path d="${d}" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>${dots}`;};
+  svg.innerHTML=mk(a,Math.min(...a)-2,Math.max(...a)+2,ca)+mk(b,Math.min(...b)-8,Math.max(...b)+8,cb);
+}
+function barChart(id,vals,labels){
+  const svg=document.getElementById(id);const W=320,H=128,pad=14;const n=vals.length;const max=Math.max(...vals)*1.15||1;
+  const bw=(W-pad*2)/n*0.56;const gap=(W-pad*2)/n;
+  let bars='';vals.forEach((v,i)=>{const h=(H-pad*2)*(v/max);const x=pad+gap*i+(gap-bw)/2;const y=H-pad-h;
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h,2).toFixed(1)}" rx="4" fill="url(#bg-${id})"/>`;});
+  svg.innerHTML=`<defs><linearGradient id="bg-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF9E4D"/><stop offset="1" stop-color="#FF6B35"/></linearGradient></defs>${bars}`;
+}
+function xlabels(id,labels){document.getElementById(id).innerHTML=labels.map(l=>`<span>${l}</span>`).join('');}
+function drawAll(){
+  const d=DATA[range];
+  lineChart('chart-temp',d.temp,'#FF6B35',{min:38.0,max:39.4,band:[38.3,39.2]});
+  lineChart('chart-comfort',d.comfort,'#0FB6AE',{min:80,max:100});
+  dualChart('chart-env',d.envT,d.envH,'#FF9E4D','#0FB6AE');
+  barChart('chart-sleep',d.sleep,d.x);
+  xlabels('x-temp',d.x);xlabels('x-comfort',d.x);xlabels('x-env',d.x);xlabels('x-sleep',d.x);
+}
+
+/* init */
+go('home');
+window.addEventListener('load',()=>setTimeout(()=>{if(document.getElementById('v-data').classList.contains('active'))drawAll();},50));
+
+/* PWA */
+if('serviceWorker' in navigator){
+  var _hadCtrl=!!navigator.serviceWorker.controller,_swReloaded=false;
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(_swReloaded)return;_swReloaded=true;if(_hadCtrl)location.reload();});
+}
+</script>
+</body>
+</html>
