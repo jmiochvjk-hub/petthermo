@@ -1,9 +1,10 @@
-const CACHE = 'petthermo-v6';
+const CACHE = 'petthermo-v7';
 const ASSETS = [
   './',
   './index.html',
   './app.html',
   './i18n.js',
+  './gate.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
