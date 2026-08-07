@@ -1,4 +1,4 @@
-const CACHE = 'petthermo-v7';
+const CACHE = 'petthermo-v8';
 const ASSETS = [
   './',
   './index.html',

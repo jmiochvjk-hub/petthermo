@@ -92,7 +92,8 @@
       input.focus();
     }
     function submit() {
-      if (input.value === PASS) {
+      // 宽容匹配：忽略首尾空格与大小写，避免手机键盘自动大写/补空格导致输对却报错
+      if (input.value.trim().toLowerCase() === PASS.trim().toLowerCase()) {
         try { localStorage.setItem(KEY, TOKEN); } catch (e) {}
         document.documentElement.classList.remove('pt-locked');
         g.remove();
@@ -107,6 +108,14 @@
     setTimeout(function () { input.focus(); }, 60);
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
-  else mount();
+  /* 兜底：浮层若因任何异常没挂上，别让页面白屏——直接放行显示内容（软门禁，空白比无门更糟） */
+  function safeMount() {
+    try { mount(); }
+    catch (e) {
+      document.documentElement.classList.remove('pt-locked');
+      try { style.remove(); } catch (_) {}
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', safeMount);
+  else safeMount();
 })();
